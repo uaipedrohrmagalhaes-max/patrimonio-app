@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PatrimônioApp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0D1117; color: #E6EDF3; font-family: 'DM Sans', sans-serif; font-size: 14px; }
+    input, select, button { font-family: inherit; font-size: 14px; }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* Layout */
+    #app { min-height: 100vh; }
+    header { position: sticky; top: 0; z-index: 100; background: #161B22; border-bottom: 1px solid #21262D; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #00C896; }
+    main { max-width: 920px; margin: 0 auto; padding: 28px 20px 80px; }
+
+    /* Summary cards */
+    .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 2rem; }
+    .metric-card { background: #161B22; border: 1px solid #21262D; border-radius: 10px; padding: 16px 20px; }
+    .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #8B949E; margin-bottom: 6px; }
+    .metric-value { font-size: 21px; font-weight: 700; }
+    .metric-sub { font-size: 12px; color: #8B949E; margin-top: 3px; }
+
+    /* Section */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-size: 16px; font-weight: 600; }
+    .empty { text-align: center; padding: 50px 0; color: #8B949E; line-height: 1.8; }
+
+    /* App card */
+    .ap-card { display: flex; background: #161B22; border: 1px solid #21262D; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+    .ap-bar { width: 5px; flex-shrink: 0; }
+    .ap-body { flex: 1; padding: 14px 18px; }
+    .ap-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ap-tipo { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+    .ap-nome { font-size: 16px; font-weight: 600; margin: 4px 0 10px; }
+    .ap-vals { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 12px; }
+    .ap-val-label { font-size: 11px; color: #8B949E; margin-bottom: 2px; }
+    .ap-val-num { font-size: 15px; font-weight: 700; }
+
+    /* Buttons */
+    .btn-primary { background: #00C896; color: #0D1117; border: none; border-radius: 7px; padding: 8px 18px; cursor: pointer; font-weight: 700; font-size: 13px; }
+    .btn-primary:hover { background: #00b588; }
+    .btn-outline { background: transparent; border: 1px solid; border-radius: 7px; padding: 6px 14px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .btn-ghost { background: transparent; border: none; color: #8B949E; cursor: pointer; font-size: 13px; padding: 3px 7px; }
+    .btn-ghost:hover { color: #E24B4A; }
+    .btn-back { background: transparent; border: 1px solid #30363D; color: #8B949E; border-radius: 7px; padding: 7px 15px; cursor: pointer; font-size: 13px; }
+    .btn-back:hover { border-color: #8B949E; color: #E6EDF3; }
+    .btn-aporte { background: transparent; border: 1px solid #30363D; color: #4F8EF7; border-radius: 5px; padding: 4px 10px; cursor: pointer; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .btn-aporte:hover { border-color: #4F8EF7; }
+
+    /* Form */
+    .form-card { background: #161B22; border: 1px solid #21262D; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 500px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 12px; color: #8B949E; font-weight: 500; }
+    .field input, .field select { background: #0D1117; border: 1px solid #30363D; border-radius: 6px; color: #E6EDF3; padding: 9px 12px; font-size: 13px; outline: none; width: 100%; }
+    .field input:focus, .field select:focus { border-color: #00C896; }
+    .field select option { background: #161B22; }
+    .form-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+    /* Detail */
+    .detail-meta { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 6px; }
+    .detail-name { font-size: 20px; font-weight: 700; }
+    .detail-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+    .hint { font-size: 12px; color: #8B949E; margin: 10px 0; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; margin-bottom: 16px; border: 1px solid #21262D; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { background: #161B22; color: #8B949E; font-weight: 600; font-size: 11px; padding: 10px 12px; text-align: left; border-bottom: 1px solid #21262D; white-space: nowrap; }
+    td { padding: 8px 12px; border-bottom: 1px solid #1c2128; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #111820; }
+    .td-input { background: #0D1117; border: 1px solid #30363D; border-radius: 4px; color: #E6EDF3; padding: 5px 8px; font-size: 12px; width: 76px; outline: none; }
+    .td-input:focus { border-color: #00C896; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .modal { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 28px; min-width: 300px; max-width: 400px; width: 90%; }
+    .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 14px; }
+
+    /* Toast */
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #00C896; color: #0D1117; padding: 10px 22px; border-radius: 8px; font-weight: 700; font-size: 13px; z-index: 9999; pointer-events: none; animation: fadeIn .2s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+    @keyframes fadeIn { from { opacity:0; top:10px } to { opacity:1; top:20px } }
+
+    /* Utils */
+    .green { color: #00C896; }
+    .red { color: #E24B4A; }
+    .muted { color: #8B949E; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"><div class="logo-dot"></div>PatrimônioApp</div>
+    <div id="header-actions"></div>
+  </header>
+  <main id="main-content"></main>
+</div>
+
+<!-- Modal de aporte -->
+<div class="modal-overlay hidden" id="modal-aporte">
+  <div class="modal">
+    <h3 id="modal-titulo">Registrar aporte</h3>
+    <div class="field">
+      <label>Valor do aporte (R$)</label>
+      <input id="modal-input" placeholder="Ex: 1.000,00" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="confirmarAporte()">Confirmar</button>
+      <button class="btn-back" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIPOS = ["CDB / RDB", "Fundo de Investimento", "Poupança"];
+const CORES = { "CDB / RDB": "#00C896", "Fundo de Investimento": "#4F8EF7", "Poupança": "#F7C948" };
+
+let apps = [];
+let view = "list";
+let selectedId = null;
+let rendInputs = {};
+let aporteMesIdx = null;
+
+function parseNum(s) {
+  const c = String(s).replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(c);
+  return isNaN(n) ? 0 : n;
+}
+
+function fBRL(v) {
+  return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function fPct(v) {
+  return Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "%";
+}
+
+function getMesLabel(dataInicio, offset) {
+  const [ano, mes] = dataInicio.split("-").map(Number);
+  const d = new Date(ano, mes - 1 + offset, 1);
+  return d.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }).replace(". de ", "/").replace(".", "");
+}
+
+function calcEvolucao(ap) {
+  const rows = [];
+  let saldo = ap.valorInicial;
+  for (let i = 0; i < ap.meses; i++) {
+    const taxa = (ap.rendimentos[i] || 0) / 100;
+    const aporte = ap.aportes[i] || 0;
+    const saldoAntes = saldo + aporte;
+    const rend = saldoAntes * taxa;
+    saldo = saldoAntes + rend;
+    rows.push({ saldoAntes, aporte, rend, saldo });
+  }
+  return rows;
+}
+
+function totaisGerais() {
+  let inv = 0, atual = 0;
+  apps.forEach(a => {
+    const ev = calcEvolucao(a);
+    const ult = ev[ev.length - 1];
+    inv += a.valorInicial + a.aportes.reduce((s, v) => s + v, 0);
+    atual += ult ? ult.saldo : a.valorInicial;
+  });
+  return { inv, atual, rend: atual - inv };
+}
+
+function showToast(msg) {
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2400);
+}
+
+function render() {
+  const t = totaisGerais();
+  const ha = document.getElementById("header-actions");
+  const mc = document.getElementById("main-content");
+
+  if (view === "list") {
+    ha.innerHTML = `<button class="btn-primary" onclick="irForm()">+ Nova aplicação</button>`;
+
+    let html = `
+    <div class="summary-row">
+      <div class="metric-card">
+        <div class="metric-label">Total investido</div>
+        <div class="metric-value" style="color:#4F8EF7">${fBRL(t.inv)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Saldo atual</div>
+        <div class="metric-value green">${fBRL(t.atual)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Rendimento total</div>
+        <div class="metric-value ${t.rend >= 0 ? "green" : "red"}">${fBRL(t.rend)}</div>
+        <div class="metric-sub">${t.inv > 0 ? fPct(t.rend / t.inv * 100) : "—"}</div>
+      </div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Minhas aplicações</div>
+    </div>`;
+
+    if (apps.length === 0) {
+      html += `<div class="empty">Nenhuma aplicação cadastrada.<br><span style="font-size:12px">Clique em "+ Nova aplicação" para começar.</span></div>`;
+    }
+
+    apps.forEach(a => {
+      const ev = calcEvolucao(a);
+      const ult = ev[ev.length - 1];
+      const saldoAt = ult ? ult.saldo : a.valorInicial;
+      const totalInv = a.valorInicial + a.aportes.reduce((s, v) => s + v, 0);
+      const rend = saldoAt - totalInv;
+      const cor = CORES[a.tipo] || "#aaa";
+      html += `
+      <div class="ap-card">
+        <div class="ap-bar" style="background:${cor}"></div>
+        <div class="ap-body">
+          <div class="ap-top">
+            <div>
+              <div class="ap-tipo" style="color:${cor}">${a.tipo}</div>
+              <div class="ap-nome">${a.nome}</div>
+              <div class="ap-vals">
+                <div><div class="ap-val-label">Saldo atual</div><div class="ap-val-num">${fBRL(saldoAt)}</div></div>
+                <div><div class="ap-val-label">Rendimento</div><div class="ap-val-num ${rend >= 0 ? "green" : "red"}">${fBRL(rend)}</div></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <button class="btn-ghost" onclick="remover(${a.id})" title="Remover">✕</button>
+              <button class="btn-outline" style="border-color:${cor};color:${cor}" onclick="abrirDetalhe(${a.id})">Ver evolução →</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    mc.innerHTML = html;
+  }
+
+  if (view === "form") {
+    ha.innerHTML = `<button class="btn-back" onclick="irList()">← Voltar</button>`;
+    mc.innerHTML = `
+    <div class="form-title">Nova aplicação</div>
+    <div class="form-card">
+      <div class="field"><label>Nome da aplicação</label><input id="f-nome" placeholder="Ex: CDB Banco X" /></div>
+      <div class="field"><label>Tipo</label><select id="f-tipo">
+        ${TIPOS.map(t => `<option>${t}</option>`).join("")}
+      </select></div>
+      <div class="field"><label>Valor inicial (R$)</label><input id="f-valor" placeholder="Ex: 10.000,00" /></div>
+      <div class="field"><label>Mês de início</label><input type="month" id="f-data" value="${new Date().toISOString().slice(0,7)}" /></div>
+      <div class="field"><label>Quantidade de meses para acompanhar</label><input type="number" id="f-meses" value="6" min="1" max="120" /></div>
+      <button class="btn-primary" style="align-self:flex-start;margin-top:4px" onclick="adicionarAp()">Adicionar aplicação</button>
+    </div>`;
+  }
+
+  if (view === "detail") {
+    const ap = apps.find(a => a.id === selectedId);
+    if (!ap) { irList(); return; }
+    const ev = calcEvolucao(ap);
+    const ult = ev[ev.length - 1];
+    const cor = CORES[ap.tipo] || "#aaa";
+
+    ha.innerHTML = `<button class="btn-back" onclick="irList()">← Voltar</button>`;
+
+    let rows = "";
+    for (let i = 0; i < ap.meses; i++) {
+      const row = ev[i];
+      const ri = rendInputs[i] !== undefined ? rendInputs[i] : String(ap.rendimentos[i] || 0).replace(".", ",");
+      const apVal = ap.aportes[i] || 0;
+      rows += `<tr>
+        <td>${getMesLabel(ap.dataInicio, i)}</td>
+        <td><input class="td-input" value="${ri}" oninput="setRend(${i},this.value)" /></td>
+        <td><button class="btn-aporte" onclick="abrirAporte(${i})">${apVal > 0 ? fBRL(apVal) : "+ Aporte"}</button></td>
+        <td>${row ? fBRL(row.saldoAntes) : "—"}</td>
+        <td class="${row && row.rend > 0 ? "green" : "muted"}">${row ? fBRL(row.rend) : "—"}</td>
+        <td style="font-weight:600">${row ? fBRL(row.saldo) : "—"}</td>
+      </tr>`;
+    }
+
+    mc.innerHTML = `
+    <div class="detail-meta">
+      <div>
+        <div class="ap-tipo" style="color:${cor};margin-bottom:4px">${ap.tipo}</div>
+        <div class="detail-name">${ap.nome}</div>
+      </div>
+      <div class="detail-stats">
+        <div><div class="ap-val-label">Valor inicial</div><div class="ap-val-num">${fBRL(ap.valorInicial)}</div></div>
+        ${ult ? `<div><div class="ap-val-label">Saldo final</div><div class="ap-val-num green">${fBRL(ult.saldo)}</div></div>` : ""}
+      </div>
+    </div>
+    <div class="hint">Informe a rentabilidade (%) de cada mês. Use vírgula como decimal. Clique em "+ Aporte" para registrar aportes adicionais.</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Mês</th><th>Rentab. (%)</th><th>Aporte</th>
+          <th>Saldo anterior</th><th>Rendimento</th><th>Saldo final</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <button class="btn-primary" onclick="salvarRend()">💾 Salvar rendimentos</button>`;
+  }
+}
+
+function irList() { view = "list"; render(); }
+function irForm() { view = "form"; render(); }
+
+function adicionarAp() {
+  const nome = document.getElementById("f-nome").value.trim();
+  const tipo = document.getElementById("f-tipo").value;
+  const valor = parseNum(document.getElementById("f-valor").value);
+  const data = document.getElementById("f-data").value;
+  const meses = parseInt(document.getElementById("f-meses").value);
+  if (!nome) { showToast("Informe o nome."); return; }
+  if (valor <= 0) { showToast("Valor inicial inválido."); return; }
+  if (!meses || meses < 1) { showToast("Qtd. de meses inválida."); return; }
+  apps.push({ id: Date.now(), nome, tipo, valorInicial: valor, dataInicio: data, meses, rendimentos: Array(meses).fill(0), aportes: Array(meses).fill(0) });
+  showToast("Aplicação adicionada!");
+  irList();
+}
+
+function remover(id) {
+  if (!confirm("Remover esta aplicação?")) return;
+  apps = apps.filter(a => a.id !== id);
+  showToast("Removida.");
+  render();
+}
+
+function abrirDetalhe(id) {
+  selectedId = id;
+  const ap = apps.find(a => a.id === id);
+  rendInputs = {};
+  for (let i = 0; i < ap.meses; i++) rendInputs[i] = String(ap.rendimentos[i] || 0).replace(".", ",");
+  view = "detail";
+  render();
+}
+
+function setRend(i, v) { rendInputs[i] = v; }
+
+function salvarRend() {
+  apps = apps.map(a => {
+    if (a.id !== selectedId) return a;
+    const r = Array.from({ length: a.meses }, (_, i) => parseNum(rendInputs[i] ?? String(a.rendimentos[i])));
+    return { ...a, rendimentos: r };
+  });
+  showToast("Rendimentos salvos!");
+  render();
+}
+
+function abrirAporte(idx) {
+  aporteMesIdx = idx;
+  const ap = apps.find(a => a.id === selectedId);
+  document.getElementById("modal-titulo").textContent = "Aporte em " + getMesLabel(ap.dataInicio, idx);
+  document.getElementById("modal-input").value = ap.aportes[idx] > 0 ? String(ap.aportes[idx]).replace(".", ",") : "";
+  document.getElementById("modal-aporte").classList.remove("hidden");
+  setTimeout(() => document.getElementById("modal-input").focus(), 50);
+}
+
+function fecharModal() {
+  document.getElementById("modal-aporte").classList.add("hidden");
+  aporteMesIdx = null;
+}
+
+function confirmarAporte() {
+  const val = parseNum(document.getElementById("modal-input").value || "0");
+  apps = apps.map(a => {
+    if (a.id !== selectedId) return a;
+    const ap = [...a.aportes];
+    ap[aporteMesIdx] = val;
+    return { ...a, aportes: ap };
+  });
+  fecharModal();
+  showToast("Aporte registrado!");
+  render();
+}
+
+document.getElementById("modal-aporte").addEventListener("click", function(e) {
+  if (e.target === this) fecharModal();
+});
+
+render();
+</script>
+</body>
+</html>
