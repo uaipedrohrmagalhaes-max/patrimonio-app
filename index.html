@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PatrimônioApp</title>
+  <title>AplicLoop</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
@@ -98,7 +98,7 @@
 <body>
 <div id="app">
   <header>
-    <div class="logo"><div class="logo-dot"></div>PatrimônioApp</div>
+    <div class="logo"><div class="logo-dot"></div>AplicLoop</div>
     <div id="header-actions"></div>
   </header>
   <main id="main-content"></main>
@@ -123,7 +123,20 @@
 const TIPOS = ["CDB / RDB", "Fundo de Investimento", "Poupança"];
 const CORES = { "CDB / RDB": "#00C896", "Fundo de Investimento": "#4F8EF7", "Poupança": "#F7C948" };
 
-let apps = [];
+const STORAGE_KEY = "aplicloop_v1";
+
+function salvarStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(apps)); } catch(e) {}
+}
+
+function carregarStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+let apps = carregarStorage();
 let view = "list";
 let selectedId = null;
 let rendInputs = {};
@@ -324,6 +337,7 @@ function adicionarAp() {
   if (valor <= 0) { showToast("Valor inicial inválido."); return; }
   if (!meses || meses < 1) { showToast("Qtd. de meses inválida."); return; }
   apps.push({ id: Date.now(), nome, tipo, valorInicial: valor, dataInicio: data, meses, rendimentos: Array(meses).fill(0), aportes: Array(meses).fill(0) });
+  salvarStorage();
   showToast("Aplicação adicionada!");
   irList();
 }
@@ -331,6 +345,7 @@ function adicionarAp() {
 function remover(id) {
   if (!confirm("Remover esta aplicação?")) return;
   apps = apps.filter(a => a.id !== id);
+  salvarStorage();
   showToast("Removida.");
   render();
 }
@@ -352,6 +367,7 @@ function salvarRend() {
     const r = Array.from({ length: a.meses }, (_, i) => parseNum(rendInputs[i] ?? String(a.rendimentos[i])));
     return { ...a, rendimentos: r };
   });
+  salvarStorage();
   showToast("Rendimentos salvos!");
   render();
 }
@@ -379,6 +395,7 @@ function confirmarAporte() {
     return { ...a, aportes: ap };
   });
   fecharModal();
+  salvarStorage();
   showToast("Aporte registrado!");
   render();
 }
